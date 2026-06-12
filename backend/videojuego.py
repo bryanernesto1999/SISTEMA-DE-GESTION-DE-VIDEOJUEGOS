@@ -1,6 +1,6 @@
 class Producto:
-    def __init__(self, id, nombre, precio, stock):
-        self.__id = id
+    def __init__(self, idProducto, nombre, precio, stock):
+        self.__idProducto = idProducto
         self.__nombre = nombre
         self.__precio = precio
         self.__stock = stock
