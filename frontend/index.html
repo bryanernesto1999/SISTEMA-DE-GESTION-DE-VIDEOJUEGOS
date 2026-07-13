@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario de Videojuegos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Sistema de Inventario de Videojuegos</h1>
+
+    <form id="formulario">
+
+        <input type="text" id="titulo" placeholder="Título">
+
+        <input type="number" id="precio" placeholder="Precio">
+
+        <input type="number" id="stock" placeholder="Stock">
+
+        <button type="submit">
+            Registrar
+        </button>
+
+    </form>
+
+    <h2>Inventario</h2>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Precio</th>
+                <th>Stock</th>
+            </tr>
+        </thead>
+
+        <tbody id="tablaVideojuegos">
+
+        </tbody>
+
+    </table>
+
+<script src="app.js"></script>
+
+</body>
+</html>
