@@ -13,7 +13,7 @@ from models.producto import Producto
 class Videojuego(Producto):
     """Representa un videojuego con informacion adicional."""
     # Lista de estados permitidos
-    ESTADOS_VALIDOS = ['ACTIVO', 'DESCONTINUADO', 'AGOTADO', 'SUSPENDIDO']
+    ESTADOS_VALIDOS         = ['ACTIVO', 'DESCONTINUADO', 'AGOTADO', 'SUSPENDIDO']
     
     #Lista de clasificaciones permitidas 
     CLASIFICACIONES_VALIDAS = ['TODOS', 'TEEN', 'MADURO', 'ADULTOS']
@@ -49,10 +49,7 @@ def _init__(self,
     self.__id_categoria = id_categoria
     self.__nombre_categoria = nombre_categoria
     
-# ===========================
-#GETTERS 
-#Sirven para leer los datos
-#============================
+#GETTERS ==============================================================
 
 # Devuelve la plataforma 
 def get_plataforma(self) -> str:
@@ -86,9 +83,10 @@ def get_estado(self) -> str:
 def get_id_categoria(self) -> int:
     return self.__id_categoria
 
-# ===========================
-#SETTERS modificar lo datos
-#============================
+def get_nombre_categoria(self) -> str:
+    return self.__nombre_categoria
+
+#SETTERS modificar lo datos ==============================================
 
 #Cambia la plataforma y verifica que no este vacia
 def set_plataforma(self, plataforma: str):
@@ -138,17 +136,11 @@ def set_id_categoria(self, id_cat: int):
         raise ValueError("El ID de la categoría debe ser mayor a cero.")
     self.__id_categoria = id_cat    
     
-    # ===========================
-    # POLIMORFISMO
-    # Modifico el método de la clase padre
-    # ===========================
-
 #devuelve toda la informacion del videojuego 
 def mostrar_info(self) -> dict:
-    
+    """Retorna toda la informacion del videojuego (sobrescribe Producto)."""
     #obtengo primero la informacion del videojuego
-    info = super().mostrar_info()
-    
+    info = super().mostrar_info() #hereda campos del padre
     info.update({
         "plataforma": self.__plataforma,
         "desarrollador": self.__desarrollador,
@@ -158,7 +150,7 @@ def mostrar_info(self) -> dict:
         "stock_maximo": self.__stock_maximo,
         "estado": self.__estado,
         "id_categoria": self.__id_categoria,
-        "nombre_categoria": self.__nombre_categoria
+        "nombre_categoria": self.__nombre_categoria,
     })
 # DEVOLVER LA INFO 
     return info
@@ -170,7 +162,7 @@ def to_dict(self) -> dict:
 #crea un objeto videojeugo usando los daos de una fila de la base de datos
 @classmethod  
 def from_row(cls, row: dict) -> "Videojuego":
-    
+    """Crea un Videojuego desde una fila de la base de datos."""
     return cls(
         id_videojuego=row["id_videojuego"],
         titulo=row["titulo"],

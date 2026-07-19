@@ -15,9 +15,8 @@ class Producto:
     Será heredada por otras clases, por ejemplo Videojuego.
     """
 
-    # ============================
     # Constructor de la clase
-    # ============================
+    
     def __init__(self, id_videojuego: int, titulo: str,
                  precio_compra: float, precio_venta: float, stock_actual: int):
         """
