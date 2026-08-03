@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="es">
+<!--==============================================================
+1. HEAD
+Configuración del documento, Bootstrap, CSS y fuentes
+==============================================================-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SGIV — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="module" src="/src/main.jsx"></script>
+<div class="layout">
+
+  <!-- ==========================================================
+                2. SIDEBAR
+      Menú lateral del sistema
+========================================================== -->
+
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-box">🎮</div>
+      <div>
+        <div class="brand-name">GAME VAULT</div>
+        <div class="brand-sub">Inventario de Videojuegos</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">Principal</div>
+    <a href="index.html"        class="sidebar-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+    <a href="videojuegos.html"  class="sidebar-item"><i class="ti ti-device-gamepad-2"></i> Videojuegos</a>
+    <a href="categorias.html"   class="sidebar-item"><i class="ti ti-tag"></i> Categorías</a>
+
+    <div class="sidebar-section">Inventario</div>
+    <a href="movimientos.html"  class="sidebar-item"><i class="ti ti-arrows-exchange"></i> Movimientos</a>
+    <a href="almacenes.html"    class="sidebar-item"><i class="ti ti-building-warehouse"></i> Stock x Almacén</a>
+    <a href="ajustes.html"      class="sidebar-item"><i class="ti ti-adjustments"></i> Ajustes Inventario</a>
+    <a href="alertas.html"      class="sidebar-item">
+      <i class="ti ti-bell"></i> Alertas de Stock
+      <span class="sidebar-badge" id="badge-alertas">2</span>
+    </a>
+
+    <div class="sidebar-section">Compras</div>
+    <a href="ordenes.html"      class="sidebar-item"><i class="ti ti-shopping-cart"></i> Órdenes de Compra</a>
+    <a href="proveedores.html"  class="sidebar-item"><i class="ti ti-truck"></i> Proveedores</a>
+
+    <div class="sidebar-section">Administración</div>
+    <a href="usuarios.html"     class="sidebar-item"><i class="ti ti-users"></i> Usuarios y Roles</a>
+    <a href="almacenes.html"    class="sidebar-item"><i class="ti ti-building"></i> Almacenes</a>
+    <a href="reportes.html"     class="sidebar-item"><i class="ti ti-chart-bar"></i> Reportes</a>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">AS</div>
+      <div>
+        <div class="user-name">Admin Sistema</div>
+        <div class="user-role">Administrador</div>
+      </div>
+    </div>
+  </nav>
+
+  <!--==============================================================
+3. MAIN
+Contenido principal del Dashboard
+==============================================================-->
+
+  <div class="main">
+
+<!--==============================================================
+3.1 TOPBAR
+Barra superior con buscador y botones
+==============================================================-->
+
+    <div class="topbar">
+      <span class="topbar-title">Dashboard — Sistema de Inventario</span>
+      <div class="topbar-actions">
+        <!-- BÚSQUEDA FUNCIONAL -->
+        <div class="search-wrap">
+          <i class="ti ti-search"></i>
+          <input type="text" class="search-input" id="buscador"
+            placeholder="Buscar videojuego..." oninput="filtrarTabla()" />
+        </div>
+        <button class="btn-sgiv btn-movement" data-bs-toggle="modal" data-bs-target="#modalMovimiento">
+          <i class="ti ti-arrows-exchange"></i> + Movimiento
+        </button>
+        <button class="btn-sgiv btn-new" onclick="abrirModalNuevo()">
+          <i class="ti ti-plus"></i> + Nuevo Juego
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido scrolleable -->
+    <div class="content">
+
+ <!--==============================================================
+3.2 TARJETAS DE ESTADÍSTICAS
+Cards con indicadores principales
+==============================================================--> 
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-label">Total videojuegos</div>
+            <div class="stat-value" style="color:var(--c-violet-l);" id="stat-total">—</div>
+            <div class="stat-sub" style="color:var(--c-green);" id="stat-total-sub">cargando...</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-label">Unidades en stock</div>
+            <div class="stat-value" style="color:var(--c-blue);" id="stat-stock">—</div>
+            <div class="stat-sub" style="color:var(--c-muted);">total en inventario</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-label">Alertas activas</div>
+            <div class="stat-value" style="color:var(--c-amber);" id="stat-alertas">—</div>
+            <div class="stat-sub" style="color:var(--c-amber);" id="stat-alertas-sub">cargando...</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card">
+            <div class="stat-label">Juegos agotados</div>
+            <div class="stat-value" style="color:var(--c-red);" id="stat-agotados">—</div>
+            <div class="stat-sub" style="color:var(--c-red);" id="stat-agotados-sub">cargando...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATÁLOGO + PANEL DERECHO -->
+      <div class="row g-3 mb-3">
+
+  <!--==============================================================
+3.3 CATÁLOGO DE VIDEOJUEGOS
+Tabla principal del inventario
+==============================================================-->
+
+        <div class="col-lg-8">
+          <div class="sec-card">
+            <div class="sec-header">
+              <span class="sec-title">📋 Catálogo de Videojuegos</span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span style="font-size:11px;color:var(--c-violet-l);font-weight:700;" id="conteo-juegos">— títulos</span>
+                <!-- Filtro rápido por estado -->
+                <select id="filtro-estado" onchange="filtrarTabla()"
+                  style="background:rgba(255,255,255,0.04);border:0.5px solid var(--c-border);border-radius:6px;color:var(--c-muted);font-size:11px;padding:3px 8px;font-family:inherit;">
+                  <option value="">Todos</option>
+                  <option value="ACTIVO">Activos</option>
+                  <option value="AGOTADO">Agotados</option>
+                  <option value="MINIMO">Stock mínimo</option>
+                </select>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="table-sgiv">
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Plataforma</th>
+                    <th>Categoría</th>
+                    <th>Stock</th>
+                    <th>Precio venta</th>
+                    <th>Estado</th>
+                    <th style="width:80px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-catalogo">
+                  <tr><td colspan="7" class="sin-resultados">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+<!--==============================================================
+3.4 PANEL DERECHO
+Alertas y movimientos recientes
+==============================================================-->
+
+        <div class="col-lg-4 d-flex flex-column gap-3">
+
+          <!-- Alertas -->
+          <div class="sec-card">
+            <div class="sec-header">
+              <span class="sec-title">🔔 Alertas de Stock</span>
+              <span id="badge-alertas-panel"
+                style="background:rgba(239,68,68,0.15);color:var(--c-red);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">0 activas</span>
+            </div>
+            <div id="alertas-container">
+              <div class="sin-resultados">Cargando alertas...</div>
+            </div>
+          </div>
+
+          <!-- Movimientos recientes (estáticos de la BD de prueba) -->
+          <div class="sec-card">
+            <div class="sec-header">
+              <span class="sec-title">📦 Movimientos Recientes</span>
+              <span style="background:rgba(96,165,250,0.12);color:var(--c-blue);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">últimos 5</span>
+            </div>
+            <div id="movimientos-container">
+              <div class="mov-item">
+                <div class="mov-dot" style="background:var(--c-green);"></div>
+                <div><div class="mov-title">God of War Ragnarok</div><div class="mov-sub">ENTRADA · OC-001</div></div>
+                <div class="mov-qty" style="color:var(--c-green);">+25</div>
+              </div>
+              <div class="mov-item">
+                <div class="mov-dot" style="background:var(--c-red);"></div>
+                <div><div class="mov-title">God of War Ragnarok</div><div class="mov-sub">SALIDA · Venta minorista</div></div>
+                <div class="mov-qty" style="color:var(--c-red);">-5</div>
+              </div>
+              <div class="mov-item">
+                <div class="mov-dot" style="background:var(--c-blue);"></div>
+                <div><div class="mov-title">God of War Ragnarok</div><div class="mov-sub">TRASLADO · Almacén Norte</div></div>
+                <div class="mov-qty" style="color:var(--c-blue);">+7</div>
+              </div>
+              <div class="mov-item">
+                <div class="mov-dot" style="background:var(--c-green);"></div>
+                <div><div class="mov-title">FIFA 24</div><div class="mov-sub">ENTRADA · OC-002</div></div>
+                <div class="mov-qty" style="color:var(--c-green);">+40</div>
+              </div>
+              <div class="mov-item">
+                <div class="mov-dot" style="background:var(--c-amber);"></div>
+                <div><div class="mov-title">Zelda: Tears of Kingdom</div><div class="mov-sub">AJUSTE · Conteo físico</div></div>
+                <div class="mov-qty" style="color:var(--c-amber);">-2</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+<!--==============================================================
+3.5 PROVEEDORES
+Listado de proveedores
+==============================================================-->
+
+      <!-- PROVEEDORES + ÓRDENES DE COMPRA -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <div class="sec-card">
+            <div class="sec-header">
+              <span class="sec-title">🚚 Proveedores</span>
+              <span style="background:rgba(34,197,94,0.12);color:var(--c-green);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">3 activos</span>
+            </div>
+            <div class="prov-item">
+              <div class="prov-avatar" style="background:rgba(0,55,145,0.2);color:var(--c-blue);">SI</div>
+              <div><div class="prov-name">Sony Interactive Entertainment Perú</div><div class="prov-email">ventas@sony.pe · 014512300</div></div>
+              <div class="prov-oc">2 OC</div>
+            </div>
+            <div class="prov-item">
+              <div class="prov-avatar" style="background:rgba(34,197,94,0.15);color:var(--c-green);">GZ</div>
+              <div><div class="prov-name">Distribuidora GameZone SAC</div><div class="prov-email">pedidos@gzone.com · 016789012</div></div>
+              <div class="prov-oc">1 OC</div>
+            </div>
+            <div class="prov-item">
+              <div class="prov-avatar" style="background:rgba(228,0,15,0.15);color:#f87171;">ND</div>
+              <div><div class="prov-name">Nintendo Distribuidor Oficial</div><div class="prov-email">info@nintendo.pe · 015678901</div></div>
+              <div class="prov-oc">1 OC</div>
+            </div>
+          </div>
+        </div>
+<!--==============================================================
+3.6 ÓRDENES DE COMPRA
+Órdenes registradas
+==============================================================-->
+        <div class="col-md-6">
+          <div class="sec-card">
+            <div class="sec-header">
+              <span class="sec-title">🛒 Órdenes de Compra</span>
+              <div style="display:flex;gap:6px;">
+                <span style="background:rgba(96,165,250,0.12);color:var(--c-blue);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;">3 abiertas</span>
+                <button class="btn-sgiv btn-new" style="padding:4px 10px;font-size:11px;">+ Nueva</button>
+              </div>
+            </div>
+            <div class="oc-item">
+              <span style="font-size:11px;color:var(--c-muted);min-width:52px;">#OC-001</span>
+              <div><div style="font-size:12px;font-weight:700;color:var(--c-text);">Sony Interactive Entertainment</div><div style="font-size:10px;color:var(--c-muted);">Esperado: en 15 días</div></div>
+              <span class="oc-badge oc-aprobada ms-auto">APROBADA</span>
+              <span style="font-size:12px;font-weight:700;color:var(--c-teal);margin-left:10px;">S/ 5,400</span>
+            </div>
+            <div class="oc-item">
+              <span style="font-size:11px;color:var(--c-muted);min-width:52px;">#OC-002</span>
+              <div><div style="font-size:12px;font-weight:700;color:var(--c-text);">Distribuidora GameZone SAC</div><div style="font-size:10px;color:var(--c-muted);">Esperado: en 10 días</div></div>
+              <span class="oc-badge oc-enviada ms-auto">ENVIADA</span>
+              <span style="font-size:12px;font-weight:700;color:var(--c-teal);margin-left:10px;">S/ 6,050</span>
+            </div>
+            <div class="oc-item">
+              <span style="font-size:11px;color:var(--c-muted);min-width:52px;">#OC-003</span>
+              <div><div style="font-size:12px;font-weight:700;color:var(--c-text);">Nintendo Distribuidor Oficial</div><div style="font-size:10px;color:var(--c-muted);">Esperado: en 20 días</div></div>
+              <span class="oc-badge oc-borrador ms-auto">BORRADOR</span>
+              <span style="font-size:12px;font-weight:700;color:var(--c-teal);margin-left:10px;">S/ 800</span>
+            </div>
+          </div>
+        </div>
+      </div>
+<!--==============================================================
+3.7 STOCK POR ALMACÉN
+Inventario distribuido por almacén
+==============================================================-->
+
+      <div class="row g-3 mb-3">
+        <div class="col-12">
+          <div class="sec-card">
+            <div class="sec-header">
+              <span class="sec-title">🏭 Stock por Almacén</span>
+              <span style="font-size:11px;color:var(--c-violet-l);font-weight:700;">3 almacenes activos</span>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="almacen-card">
+                  <div style="font-size:11px;color:var(--c-muted);margin-bottom:2px;"><i class="ti ti-building-warehouse" style="font-size:12px;"></i> Almacén Central</div>
+                  <div class="almacen-uds">76 uds.</div>
+                  <div style="font-size:10px;color:var(--c-muted);margin-top:3px;"><i class="ti ti-map-pin" style="font-size:10px;"></i> Av. Industrial 100, Lima · Resp: Pedro Huanca</div>
+                  <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:3px;margin-top:8px;"><div style="height:100%;width:73%;background:var(--c-violet-l);border-radius:3px;"></div></div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="almacen-card">
+                  <div style="font-size:11px;color:var(--c-muted);margin-bottom:2px;"><i class="ti ti-building-warehouse" style="font-size:12px;"></i> Almacén Norte</div>
+                  <div class="almacen-uds">35 uds.</div>
+                  <div style="font-size:10px;color:var(--c-muted);margin-top:3px;"><i class="ti ti-map-pin" style="font-size:10px;"></i> Av. Túpac Amaru 500, Lima · Resp: Rosa Quispe</div>
+                  <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:3px;margin-top:8px;"><div style="height:100%;width:33%;background:var(--c-blue);border-radius:3px;"></div></div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="almacen-card">
+                  <div style="font-size:11px;color:var(--c-muted);margin-bottom:2px;"><i class="ti ti-building-warehouse" style="font-size:12px;"></i> Almacén Sur</div>
+                  <div class="almacen-uds">21 uds.</div>
+                  <div style="font-size:10px;color:var(--c-muted);margin-top:3px;"><i class="ti ti-map-pin" style="font-size:10px;"></i> Panamericana Sur km 15 · Resp: Marco Díaz</div>
+                  <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:3px;margin-top:8px;"><div style="height:100%;width:20%;background:var(--c-teal);border-radius:3px;"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!--==============================================================
+4. MODAL VIDEOJUEGO
+Registrar y editar videojuegos
+==============================================================-->
+<div class="modal fade" id="modalJuego" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-juego-titulo">Registrar videojuego</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <!-- ID oculto para saber si estamos editando -->
+        <input type="hidden" id="jg-id" value="" />
+        <form id="formJuego" novalidate>
+          <div class="mb-3">
+            <label class="form-label-sgiv">Título del videojuego *</label>
+            <input type="text" class="form-control" id="jg-titulo" placeholder="Ej: God of War: Ragnarok" />
+            <div class="feedback-error" id="err-titulo">El título es requerido.</div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label-sgiv">Precio compra (S/) *</label>
+              <input type="number" class="form-control" id="jg-pcompra" placeholder="0.00" min="0" step="0.01" />
+              <div class="feedback-error" id="err-pcompra">Precio inválido.</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label-sgiv">Precio venta (S/) *</label>
+              <input type="number" class="form-control" id="jg-pventa" placeholder="0.00" min="0" step="0.01" />
+              <div class="feedback-error" id="err-pventa">Precio inválido.</div>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label-sgiv">Categoría *</label>
+              <select class="form-select" id="jg-categoria">
+                <option value="">Seleccionar...</option>
+              </select>
+              <div class="feedback-error" id="err-categoria">Selecciona una categoría.</div>
+            </div>
+            <div class="col-6">
+              <label class="form-label-sgiv">Plataforma *</label>
+              <select class="form-select" id="jg-plataforma">
+                <option value="">Seleccionar...</option>
+                <option>PlayStation 5</option><option>PlayStation 4</option>
+                <option>Xbox Series X</option><option>Nintendo Switch</option>
+                <option>PC</option><option>Mobile</option>
+              </select>
+              <div class="feedback-error" id="err-plataforma">Selecciona una plataforma.</div>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label-sgiv">Desarrollador</label>
+              <input type="text" class="form-control" id="jg-dev" placeholder="Ej: FromSoftware" />
+            </div>
+            <div class="col-6">
+              <label class="form-label-sgiv">Año lanzamiento</label>
+              <input type="number" class="form-control" id="jg-anio" placeholder="2024" min="1970" max="2100" />
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-4">
+              <label class="form-label-sgiv">Stock inicial *</label>
+              <input type="number" class="form-control" id="jg-stock" placeholder="0" min="0" />
+              <div class="feedback-error" id="err-stock">Stock inválido.</div>
+            </div>
+            <div class="col-4">
+              <label class="form-label-sgiv">Stock mínimo</label>
+              <input type="number" class="form-control" id="jg-smin" value="3" min="0" />
+            </div>
+            <div class="col-4">
+              <label class="form-label-sgiv">Stock máximo</label>
+              <input type="number" class="form-control" id="jg-smax" value="100" min="0" />
+            </div>
+          </div>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label-sgiv">Clasificación</label>
+              <select class="form-select" id="jg-clasif">
+                <option>TODOS</option><option>TEEN</option>
+                <option>MADURO</option><option>ADULTOS</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label-sgiv">Estado</label>
+              <select class="form-select" id="jg-estado">
+                <option>ACTIVO</option><option>DESCONTINUADO</option>
+                <option>AGOTADO</option><option>SUSPENDIDO</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer" style="gap:8px;">
+        <button type="button" class="btn-sgiv btn-movement" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-sgiv btn-new" onclick="guardarJuego()">
+          <i class="ti ti-check"></i> <span id="btn-guardar-txt">Guardar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--==============================================================
+5. MODAL MOVIMIENTO
+Entradas, salidas y traslados
+==============================================================-->
+<div class="modal fade" id="modalMovimiento" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:440px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Registrar movimiento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label-sgiv">Tipo de movimiento *</label>
+        <div style="display:flex;gap:6px;margin-bottom:14px;" id="tipos-mov">
+          <button class="tipo-btn sel-entrada" onclick="selecTipo(this,'ENTRADA')">
+            <i class="ti ti-arrow-bar-to-down" style="font-size:16px;display:block;margin-bottom:3px;"></i>ENTRADA
+          </button>
+          <button class="tipo-btn" onclick="selecTipo(this,'SALIDA')">
+            <i class="ti ti-arrow-bar-up" style="font-size:16px;display:block;margin-bottom:3px;"></i>SALIDA
+          </button>
+          <button class="tipo-btn" onclick="selecTipo(this,'TRASLADO')">
+            <i class="ti ti-arrows-left-right" style="font-size:16px;display:block;margin-bottom:3px;"></i>TRASLADO
+          </button>
+          <button class="tipo-btn" onclick="selecTipo(this,'DEVOLUCION')">
+            <i class="ti ti-refresh" style="font-size:16px;display:block;margin-bottom:3px;"></i>DEVOL.
+          </button>
+        </div>
+        <div class="mb-3">
+          <label class="form-label-sgiv">Videojuego *</label>
+          <select class="form-select" id="mov-juego">
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-7">
+            <label class="form-label-sgiv">Almacén *</label>
+            <select class="form-select" id="mov-almacen">
+              <option value="1">Almacén Central</option>
+              <option value="2">Almacén Norte</option>
+              <option value="3">Almacén Sur</option>
+            </select>
+          </div>
+          <div class="col-5">
+            <label class="form-label-sgiv">Cantidad *</label>
+            <input type="number" class="form-control" id="mov-cantidad" placeholder="0" min="1" />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label-sgiv">Precio unitario (S/)</label>
+          <input type="number" class="form-control" id="mov-precio" placeholder="0.00" min="0" step="0.01" />
+        </div>
+        <div>
+          <label class="form-label-sgiv">Motivo / observación</label>
+          <textarea class="form-control" id="mov-motivo" rows="2" placeholder="Ej: Recepción orden compra OC-001..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer" style="gap:8px;">
+        <button type="button" class="btn-sgiv btn-movement" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-sgiv btn-ok" onclick="guardarMovimiento()">
+          <i class="ti ti-check"></i> Registrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--==============================================================
+6. MODAL ELIMINAR
+Confirmación para eliminar un videojuego
+==============================================================-->
+<div class="modal fade" id="modalEliminar" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:380px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">¿Eliminar videojuego?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--c-muted);font-size:13px;margin:0;">
+          Se eliminará <strong id="nombre-a-eliminar" style="color:var(--c-text);"></strong> permanentemente del inventario.
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+      <div class="modal-footer" style="gap:8px;">
+        <button type="button" class="btn-sgiv btn-movement" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-sgiv"
+          style="background:var(--c-red);border-color:transparent;color:#fff;"
+          onclick="confirmarEliminar()">
+          <i class="ti ti-trash"></i> Sí, eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--==============================================================
+7. LIBRERÍAS JAVASCRIPT
+Bootstrap, API y utilidades
+==============================================================-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<!--==============================================================
+8. SCRIPT PRINCIPAL
+Lógica completa del Dashboard
+==============================================================-->
+<script>
+//==============================================================
+// 8.1 VARIABLES GLOBALES
+//==============================================================
+let todosJuegos  = [];   // todos los registros cargados del API
+let filtrando    = [];   // subconjunto visible
+let idEliminar   = null; // id en cola de eliminación
+let tipoMov      = 'ENTRADA';
+
+//==============================================================
+// 8.2 CARGA INICIAL
+//==============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  await Promise.all([
+    cargarJuegos(),
+    cargarAlertas(),
+    llenarCategorias('jg-categoria'),
+  ]);
+});
+
+//==============================================================
+// 8.3 VIDEOJUEGOS
+// Cargar información desde el backend
+//==============================================================
+async function cargarJuegos() {
+  try {
+    todosJuegos = await API.getVideojuegos();
+  } catch {
+    // fallback con datos de prueba si el backend no está activo
+    todosJuegos = [
+      { id_videojuego:1, titulo:'God of War Ragnarok',     plataforma:'PlayStation 5', nombre_categoria:'Acción',    stock_actual:25, precio_venta:299.90, estado:'ACTIVO',  stock_minimo:5 },
+      { id_videojuego:2, titulo:'Elden Ring',              plataforma:'PlayStation 5', nombre_categoria:'RPG',       stock_actual:18, precio_venta:249.90, estado:'ACTIVO',  stock_minimo:5 },
+      { id_videojuego:3, titulo:'FIFA 24',                 plataforma:'PlayStation 5', nombre_categoria:'Deportes',  stock_actual:40, precio_venta:199.90, estado:'ACTIVO',  stock_minimo:8 },
+      { id_videojuego:4, titulo:'Civilization VI',         plataforma:'PC',            nombre_categoria:'Estrategia',stock_actual:8,  precio_venta:149.90, estado:'ACTIVO',  stock_minimo:3 },
+      { id_videojuego:5, titulo:'Resident Evil 4 Remake',  plataforma:'PlayStation 5', nombre_categoria:'Terror',    stock_actual:15, precio_venta:279.90, estado:'ACTIVO',  stock_minimo:4 },
+      { id_videojuego:6, titulo:'Zelda: Tears of Kingdom', plataforma:'Nintendo Switch',nombre_categoria:'RPG',      stock_actual:2,  precio_venta:259.90, estado:'ACTIVO',  stock_minimo:5 },
+      { id_videojuego:7, titulo:'Call of Duty MW3',        plataforma:'Xbox Series X', nombre_categoria:'Acción',   stock_actual:0,  precio_venta:229.90, estado:'AGOTADO', stock_minimo:5 },
+      { id_videojuego:8, titulo:'NBA 2K24',                plataforma:'PlayStation 5', nombre_categoria:'Deportes',  stock_actual:30, precio_venta:189.90, estado:'ACTIVO',  stock_minimo:6 },
+    ];
+    toast('Backend no disponible — usando datos locales', 'warning');
+  }
+  filtrarTabla();
+  actualizarStats();
+  llenarSelectJuegos('mov-juego', todosJuegos);
+}
+//==============================================================
+// 8.4 ALERTAS
+//==============================================================
+async function cargarAlertas() {
+  try {
+    const alertas = await API.getAlertas();
+    renderAlertas(alertas);
+  } catch {
+    // Alertas de prueba
+    renderAlertas([
+      { id_alerta:1, titulo:'Zelda: Tears of Kingdom', mensaje:'Stock actual (2) < mínimo (5) — Almacén Central', tipo:'STOCK_MINIMO' },
+      { id_alerta:2, titulo:'Call of Duty MW3',        mensaje:'Sin stock disponible — OC pendiente', tipo:'STOCK_AGOTADO' },
+    ]);
+  }
+}
+
+//==============================================================
+// 8.5 TABLA DEL CATÁLOGO
+//==============================================================
+function filtrarTabla() {
+  const q      = (document.getElementById('buscador').value || '').toLowerCase().trim();
+  const estado = document.getElementById('filtro-estado').value;
+
+  filtrando = todosJuegos.filter(j => {
+    const matchQ = !q ||
+      j.titulo.toLowerCase().includes(q) ||
+      (j.nombre_categoria || '').toLowerCase().includes(q) ||
+      (j.plataforma || '').toLowerCase().includes(q) ||
+      (j.desarrollador || '').toLowerCase().includes(q);
+
+    const matchEst =
+      !estado ? true :
+      estado === 'AGOTADO' ? j.stock_actual === 0 :
+      estado === 'MINIMO'  ? (j.stock_actual > 0 && j.stock_actual < j.stock_minimo) :
+      j.estado === estado;
+
+    return matchQ && matchEst;
+  });
+
+  renderTabla();
+}
+
+function renderTabla() {
+  const tbody = document.getElementById('tbody-catalogo');
+  document.getElementById('conteo-juegos').textContent = `${filtrando.length} títulos`;
+
+  if (filtrando.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="sin-resultados">No se encontraron videojuegos</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtrando.map(j => `
+    <tr>
+      <td style="font-weight:600;color:var(--c-text);">${j.titulo}</td>
+      <td>${badgePlat(j.plataforma)}</td>
+      <td style="color:var(--c-muted);font-size:12px;">${j.nombre_categoria || '—'}</td>
+      <td>${stockBar(j.stock_actual, j.stock_minimo, 50)}</td>
+      <td style="color:var(--c-violet-l);font-weight:700;">S/ ${Number(j.precio_venta).toFixed(2)}</td>
+      <td>${badgeEstado(j)}</td>
+      <td>
+        <div style="display:flex;gap:4px;">
+          <button class="btn-sgiv"
+            style="padding:4px 8px;font-size:11px;background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.25);color:var(--c-violet-l);"
+            onclick="abrirModalEditar(${j.id_videojuego})">
+            <i class="ti ti-edit"></i>
+          </button>
+          <button class="btn-sgiv"
+            style="padding:4px 8px;font-size:11px;background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:var(--c-red);"
+            onclick="pedirEliminar(${j.id_videojuego}, '${j.titulo.replace(/'/g,"\\'")}')">
+            <i class="ti ti-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+//==============================================================
+// 8.6 ESTADÍSTICAS
+//==============================================================
+function actualizarStats() {
+  const totalStock  = todosJuegos.reduce((a, j) => a + j.stock_actual, 0);
+  const agotados    = todosJuegos.filter(j => j.stock_actual === 0);
+  document.getElementById('stat-total').textContent    = todosJuegos.length;
+  document.getElementById('stat-stock').textContent    = totalStock;
+  document.getElementById('stat-agotados').textContent = agotados.length;
+  document.getElementById('stat-agotados-sub').textContent =
+    agotados.length > 0 ? agotados[0].titulo : 'ninguno';
+}
+
+// ════════════════════════════════════════════════
+//  ALERTAS
+// ════════════════════════════════════════════════
+function renderAlertas(alertas) {
+  document.getElementById('stat-alertas').textContent = alertas.length;
+  document.getElementById('stat-alertas-sub').textContent =
+    alertas.length > 0 ? '⚠ requiere atención' : '✓ sin alertas';
+  document.getElementById('badge-alertas').textContent  = alertas.length;
+  document.getElementById('badge-alertas-panel').textContent = `${alertas.length} activas`;
+
+  const cont = document.getElementById('alertas-container');
+  if (alertas.length === 0) {
+    cont.innerHTML = '<div class="sin-resultados" style="padding:16px;">Sin alertas activas ✓</div>';
+    return;
+  }
+  cont.innerHTML = alertas.map(a => `
+    <div class="alert-item">
+      <i class="ti ${a.tipo === 'STOCK_AGOTADO' ? 'ti-circle-x' : 'ti-alert-triangle'} alert-icon"
+         style="color:${a.tipo === 'STOCK_AGOTADO' ? 'var(--c-red)' : 'var(--c-amber)'};"></i>
+      <div>
+        <div class="alert-name">${a.titulo || a.mensaje}</div>
+        <div class="alert-desc">${a.mensaje}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════════════════════
+//  MODAL: NUEVO / EDITAR JUEGO
+// ════════════════════════════════════════════════
+function limpiarFormJuego() {
+  document.getElementById('jg-id').value      = '';
+  document.getElementById('jg-titulo').value  = '';
+  document.getElementById('jg-pcompra').value = '';
+  document.getElementById('jg-pventa').value  = '';
+  document.getElementById('jg-categoria').value = '';
+  document.getElementById('jg-plataforma').value = '';
+  document.getElementById('jg-dev').value     = '';
+  document.getElementById('jg-anio').value    = '';
+  document.getElementById('jg-stock').value   = '';
+  document.getElementById('jg-smin').value    = '3';
+  document.getElementById('jg-smax').value    = '100';
+  document.getElementById('jg-clasif').value  = 'TODOS';
+  document.getElementById('jg-estado').value  = 'ACTIVO';
+  // Ocultar errores
+  document.querySelectorAll('.feedback-error').forEach(e => e.classList.remove('show'));
+  document.querySelectorAll('.form-control').forEach(e => e.classList.remove('is-invalid'));
+}
+
+function abrirModalNuevo() {
+  limpiarFormJuego();
+  document.getElementById('modal-juego-titulo').textContent = 'Registrar videojuego';
+  document.getElementById('btn-guardar-txt').textContent    = 'Guardar';
+  new bootstrap.Modal(document.getElementById('modalJuego')).show();
+}
+
+function abrirModalEditar(id) {
+  const j = todosJuegos.find(x => x.id_videojuego === id);
+  if (!j) return;
+  limpiarFormJuego();
+  document.getElementById('modal-juego-titulo').textContent = 'Editar videojuego';
+  document.getElementById('btn-guardar-txt').textContent    = 'Actualizar';
+  document.getElementById('jg-id').value       = j.id_videojuego;
+  document.getElementById('jg-titulo').value   = j.titulo;
+  document.getElementById('jg-pcompra').value  = j.precio_compra || '';
+  document.getElementById('jg-pventa').value   = j.precio_venta;
+  document.getElementById('jg-categoria').value= j.id_categoria || '';
+  document.getElementById('jg-plataforma').value= j.plataforma;
+  document.getElementById('jg-dev').value      = j.desarrollador || '';
+  document.getElementById('jg-anio').value     = j.anio_lanzamiento || '';
+  document.getElementById('jg-stock').value    = j.stock_actual;
+  document.getElementById('jg-smin').value     = j.stock_minimo;
+  document.getElementById('jg-smax').value     = j.stock_maximo;
+  document.getElementById('jg-clasif').value   = j.clasificacion || 'TODOS';
+  document.getElementById('jg-estado').value   = j.estado;
+  new bootstrap.Modal(document.getElementById('modalJuego')).show();
+}
+
+function validarFormJuego() {
+  let ok = true;
+  const checks = [
+    ['jg-titulo',    v => v.trim().length > 0,            'err-titulo'],
+    ['jg-pcompra',   v => !isNaN(v) && Number(v) >= 0,   'err-pcompra'],
+    ['jg-pventa',    v => !isNaN(v) && Number(v) >= 0,   'err-pventa'],
+    ['jg-categoria', v => v !== '',                       'err-categoria'],
+    ['jg-plataforma',v => v !== '',                       'err-plataforma'],
+    ['jg-stock',     v => !isNaN(v) && Number(v) >= 0,   'err-stock'],
+  ];
+  checks.forEach(([id, fn, errId]) => {
+    const val = document.getElementById(id).value;
+    const err = document.getElementById(errId);
+    const inp = document.getElementById(id);
+    if (!fn(val)) {
+      err.classList.add('show');
+      inp.classList.add('is-invalid');
+      ok = false;
+    } else {
+      err.classList.remove('show');
+      inp.classList.remove('is-invalid');
+    }
+  });
+  return ok;
+}
+
+async function guardarJuego() {
+  if (!validarFormJuego()) return;
+
+  const id      = document.getElementById('jg-id').value;
+  const esEditar = id !== '';
+
+  const payload = {
+    titulo:           document.getElementById('jg-titulo').value.trim(),
+    precio_compra:    parseFloat(document.getElementById('jg-pcompra').value),
+    precio_venta:     parseFloat(document.getElementById('jg-pventa').value),
+    id_categoria:     parseInt(document.getElementById('jg-categoria').value),
+    plataforma:       document.getElementById('jg-plataforma').value,
+    desarrollador:    document.getElementById('jg-dev').value,
+    anio_lanzamiento: parseInt(document.getElementById('jg-anio').value) || 2000,
+    stock_actual:     parseInt(document.getElementById('jg-stock').value),
+    stock_minimo:     parseInt(document.getElementById('jg-smin').value) || 3,
+    stock_maximo:     parseInt(document.getElementById('jg-smax').value) || 100,
+    clasificacion:    document.getElementById('jg-clasif').value,
+    estado:           document.getElementById('jg-estado').value,
+  };
+
+  try {
+    let resultado;
+    if (esEditar) {
+      resultado = await API.editarVideojuego(parseInt(id), payload);
+      const idx = todosJuegos.findIndex(j => j.id_videojuego === parseInt(id));
+      if (idx > -1) todosJuegos[idx] = resultado;
+      toast('Videojuego actualizado correctamente', 'success');
+    } else {
+      resultado = await API.crearVideojuego(payload);
+      todosJuegos.push(resultado);
+      toast('Videojuego registrado correctamente', 'success');
+    }
+  } catch (err) {
+    // Sin backend: actualiza localmente
+    if (esEditar) {
+      const idx = todosJuegos.findIndex(j => j.id_videojuego === parseInt(id));
+      if (idx > -1) todosJuegos[idx] = { ...todosJuegos[idx], ...payload };
+      toast('Actualizado localmente', 'warning');
+    } else {
+      todosJuegos.push({ id_videojuego: Date.now(), nombre_categoria: '—', ...payload });
+      toast('Guardado localmente (backend no disponible)', 'warning');
+    }
+  }
+
+  bootstrap.Modal.getInstance(document.getElementById('modalJuego')).hide();
+  filtrarTabla();
+  actualizarStats();
+  llenarSelectJuegos('mov-juego', todosJuegos);
+}
+
+//==============================================================
+// 8.8 ELIMINAR VIDEOJUEGO
+//==============================================================
+
+function pedirEliminar(id, titulo) {
+  idEliminar = id;
+  document.getElementById('nombre-a-eliminar').textContent = titulo;
+  new bootstrap.Modal(document.getElementById('modalEliminar')).show();
+}
+
+async function confirmarEliminar() {
+  if (!idEliminar) return;
+  try {
+    await API.eliminarVideojuego(idEliminar);
+    toast('Videojuego eliminado', 'danger');
+  } catch {
+    toast('Eliminado localmente', 'warning');
+  }
+  todosJuegos = todosJuegos.filter(j => j.id_videojuego !== idEliminar);
+  idEliminar = null;
+  bootstrap.Modal.getInstance(document.getElementById('modalEliminar')).hide();
+  filtrarTabla();
+  actualizarStats();
+}
+
+//==============================================================
+// 8.9 CRUD DE MOVIMIENTOS
+// Entradas - Salidas - Traslados - Devoluciones
+//==============================================================
+function selecTipo(btn, tipo) {
+  tipoMov = tipo;
+  const mapa = { ENTRADA:'sel-entrada', SALIDA:'sel-salida', TRASLADO:'sel-traslado', DEVOLUCION:'sel-devolucion' };
+  document.querySelectorAll('#tipos-mov .tipo-btn').forEach(b => b.className = 'tipo-btn');
+  btn.classList.add(mapa[tipo] || 'sel-entrada');
+}
+
+async function guardarMovimiento() {
+  const idJuego  = document.getElementById('mov-juego').value;
+  const cantidad = parseInt(document.getElementById('mov-cantidad').value);
+  if (!idJuego || isNaN(cantidad) || cantidad <= 0) {
+    toast('Selecciona un videojuego y una cantidad válida', 'danger');
+    return;
+  }
+
+  // Si es SALIDA o DEVOLUCION, restar stock
+  const delta = (tipoMov === 'SALIDA' || tipoMov === 'DEVOLUCION') ? -cantidad : cantidad;
+
+  try {
+    const actualizado = await API.actualizarStock(parseInt(idJuego), delta);
+    const idx = todosJuegos.findIndex(j => j.id_videojuego === actualizado.id_videojuego);
+    if (idx > -1) todosJuegos[idx] = actualizado;
+    toast(`Movimiento ${tipoMov} registrado`, 'success');
+  } catch (err) {
+    // Sin backend: actualiza localmente
+    const j = todosJuegos.find(x => x.id_videojuego === parseInt(idJuego));
+    if (j) j.stock_actual = Math.max(0, j.stock_actual + delta);
+    toast('Movimiento guardado localmente', 'warning');
+  }
+
+  bootstrap.Modal.getInstance(document.getElementById('modalMovimiento')).hide();
+  filtrarTabla();
+  actualizarStats();
+}
+</script>
+</body>
+</html>
+
