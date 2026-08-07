@@ -1,89 +1,136 @@
-import { Videojuego } from '../models/Videojuego';
+import { useState } from 'react';
+import { Videojuego, FORM_VACIO, validarForm } from '../models/videojuego';
 
-export default function TarjetaVideojuego({ data, onEditar, onEliminar, onStock }) {
-  const vj = new Videojuego(data);
+const input = (err) => ({
+  width: '100%', background: '#0f1420',
+  border: `0.5px solid ${err ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
+  borderRadius: 7, padding: '8px 10px',
+  color: '#e2e8f0', fontSize: 13,
+  outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit',
+});
 
+function Field({ label, error, children }) {
   return (
-    <div style={{
-      background: '#1a1f2e',
-      border: vj.sinStock()
-        ? '1px solid rgba(239,68,68,0.3)'
-        : '0.5px solid rgba(255,255,255,0.07)',
-      borderRadius: 12, padding: 18,
-      display: 'flex', flexDirection: 'column', gap: 10,
-      transition: 'transform .2s, box-shadow .2s',
-    }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-3px)';
-        e.currentTarget.style.boxShadow = '0 8px 28px rgba(124,58,237,0.15)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = '';
-        e.currentTarget.style.boxShadow = '';
-      }}>
-
-      {/* Cabecera */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-        <h3 style={{ color: '#e2e8f0', fontSize: 15, fontWeight: 600, margin: 0, lineHeight: 1.3, flex: 1 }}>
-          {vj.titulo}
-        </h3>
-        <span style={{ color: '#a78bfa', fontWeight: 700, fontSize: 16, whiteSpace: 'nowrap' }}>
-          S/ {Number(vj.precio_venta).toFixed(2)}
-        </span>
-      </div>
-
-      {/* Badges */}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        <span style={{ background: 'rgba(0,55,145,0.4)', color: '#60a5fa', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>
-          {vj.plataforma}
-        </span>
-        <span style={{ background: 'rgba(139,92,246,0.15)', color: '#a78bfa', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, border: '0.5px solid rgba(139,92,246,0.3)' }}>
-          {vj.nombre_categoria}
-        </span>
-        <span style={{ background: 'rgba(255,255,255,0.05)', color: '#6b7280', fontSize: 10, padding: '2px 8px', borderRadius: 20 }}>
-          {vj.clasificacion}
-        </span>
-      </div>
-
-      {/* Desarrollador y año */}
-      <div style={{ fontSize: 11, color: '#6b7280' }}>
-        {vj.desarrollador} · {vj.anio_lanzamiento}
-      </div>
-
-      {/* Stock y margen */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ color: vj.colorStock(), fontSize: 13, fontWeight: 700 }}>
-          {vj.sinStock() ? 'Sin stock' : `${vj.stock_actual} uds.`}
-          {vj.stockBajo() && !vj.sinStock() && (
-            <span style={{ color: '#f59e0b', fontSize: 10, marginLeft: 5 }}>⚠ bajo mínimo</span>
-          )}
-        </span>
-        <span style={{ fontSize: 11, color: '#4b5563' }}>
-          Margen: <span style={{ color: '#34d399' }}>{vj.margen()}%</span>
-        </span>
-      </div>
-
-      {/* Acciones */}
-      <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
-        <button onClick={() => onStock(data)} style={btnStyle('#22c55e')}>
-          📦 Stock
-        </button>
-        <button onClick={() => onEditar(data)} style={btnStyle('#a78bfa')}>
-          ✏ Editar
-        </button>
-        <button onClick={() => onEliminar(data)} style={btnStyle('#ef4444')}>
-          🗑 Eliminar
-        </button>
-      </div>
+    <div style={{ marginBottom: 12 }}>
+      <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: '#9ca3af', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.7 }}>
+        {label}
+      </label>
+      {children}
+      {error && <span style={{ color: '#ef4444', fontSize: 11, marginTop: 3, display: 'block' }}>{error}</span>}
     </div>
   );
 }
 
-function btnStyle(color) {
-  return {
-    flex: 1, background: `${color}18`,
-    color, border: `0.5px solid ${color}33`,
-    borderRadius: 7, padding: '6px 0', cursor: 'pointer',
-    fontSize: 11, fontWeight: 700, fontFamily: 'inherit',
+export default function FormVideojuego({ inicial, categorias = [], onSubmit, onCancel, cargando }) {
+  const [form, setForm] = useState(inicial || FORM_VACIO);
+  const [errores, setErrores] = useState({});
+
+  const set = (k, v) => {
+    setForm(p => ({ ...p, [k]: v }));
+    if (errores[k]) setErrores(p => ({ ...p, [k]: null }));
   };
+
+  const enviar = () => {
+    const e = validarForm(form);
+    if (Object.keys(e).length) { setErrores(e); return; }
+    // Convierte tipos antes de enviar
+    onSubmit({
+      ...form,
+      precio_compra:    Number(form.precio_compra),
+      precio_venta:     Number(form.precio_venta),
+      stock_actual:     Number(form.stock_actual),
+      stock_minimo:     Number(form.stock_minimo),
+      stock_maximo:     Number(form.stock_maximo),
+      anio_lanzamiento: Number(form.anio_lanzamiento),
+      id_categoria:     Number(form.id_categoria),
+    });
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 14px' }}>
+        <div style={{ gridColumn: '1 / -1' }}>
+          <Field label="Título del videojuego" error={errores.titulo}>
+            <input style={input(errores.titulo)} value={form.titulo}
+              onChange={e => set('titulo', e.target.value)} placeholder="Ej: Elden Ring" />
+          </Field>
+        </div>
+
+        <Field label="Plataforma" error={errores.plataforma}>
+          <select style={input(errores.plataforma)} value={form.plataforma}
+            onChange={e => set('plataforma', e.target.value)}>
+            <option value="">Seleccionar...</option>
+            {Videojuego.PLATAFORMAS.map(p => <option key={p}>{p}</option>)}
+          </select>
+        </Field>
+
+        <Field label="Categoría" error={errores.id_categoria}>
+          <select style={input(errores.id_categoria)} value={form.id_categoria}
+            onChange={e => set('id_categoria', e.target.value)}>
+            <option value="">Seleccionar...</option>
+            {categorias.map(c => (
+              <option key={c.id_categoria} value={c.id_categoria}>{c.nombre}</option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Desarrollador">
+          <input style={input(false)} value={form.desarrollador}
+            onChange={e => set('desarrollador', e.target.value)} placeholder="Ej: FromSoftware" />
+        </Field>
+
+        <Field label="Año de lanzamiento" error={errores.anio_lanzamiento}>
+          <input style={input(errores.anio_lanzamiento)} type="number"
+            value={form.anio_lanzamiento} onChange={e => set('anio_lanzamiento', e.target.value)}
+            placeholder="2024" min="1970" max="2100" />
+        </Field>
+
+        <Field label="Precio compra (S/)" error={errores.precio_compra}>
+          <input style={input(errores.precio_compra)} type="number"
+            value={form.precio_compra} onChange={e => set('precio_compra', e.target.value)}
+            placeholder="0.00" min="0" step="0.01" />
+        </Field>
+
+        <Field label="Precio venta (S/)" error={errores.precio_venta}>
+          <input style={input(errores.precio_venta)} type="number"
+            value={form.precio_venta} onChange={e => set('precio_venta', e.target.value)}
+            placeholder="0.00" min="0" step="0.01" />
+        </Field>
+
+        <Field label="Stock actual" error={errores.stock_actual}>
+          <input style={input(errores.stock_actual)} type="number"
+            value={form.stock_actual} onChange={e => set('stock_actual', e.target.value)}
+            placeholder="0" min="0" />
+        </Field>
+
+        <Field label="Clasificación">
+          <select style={input(false)} value={form.clasificacion}
+            onChange={e => set('clasificacion', e.target.value)}>
+            {Videojuego.CLASIFICACIONES.map(c => <option key={c}>{c}</option>)}
+          </select>
+        </Field>
+
+        <Field label="Estado">
+          <select style={input(false)} value={form.estado}
+            onChange={e => set('estado', e.target.value)}>
+            {Videojuego.ESTADOS.map(s => <option key={s}>{s}</option>)}
+          </select>
+        </Field>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, marginTop: 6, justifyContent: 'flex-end' }}>
+        <button onClick={onCancel} style={{
+          background: 'transparent', border: '0.5px solid rgba(255,255,255,0.15)',
+          color: '#9ca3af', padding: '8px 18px', borderRadius: 7,
+          cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, fontSize: 13,
+        }}>Cancelar</button>
+        <button onClick={enviar} disabled={cargando} style={{
+          background: 'linear-gradient(135deg,#7c3aed,#5b21b6)',
+          color: '#fff', border: 'none', padding: '8px 22px', borderRadius: 7,
+          cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: 13,
+          opacity: cargando ? 0.6 : 1,
+        }}>{cargando ? 'Guardando...' : 'Guardar'}</button>
+      </div>
+    </div>
+  );
 }

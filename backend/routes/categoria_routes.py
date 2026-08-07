@@ -17,7 +17,7 @@ def listar(): #listar
         return VideojuegoDAO.obtener_categorias()
      
     except RuntimeError as e: #si ocurre un error en la base de datos devolviendo un error HTTP 500 
-        raise  HTTPException(500, str(e))
+        raise  HTTPException(status_code=500, detail=str(e))
     
 #MOSTRAR ALERTAS DE STOCK =======================================
 
@@ -29,4 +29,4 @@ def alertas():
     try: #Obtengo las alertas desde la base de datos.
         return VideojuegoDAO.obtener_alertas() # Si ocurre un error, envío un mensaje con código 500.
     except RuntimeError as e:
-        raise HTTPException 
+        raise HTTPException(status_code=500, detail=str(e))

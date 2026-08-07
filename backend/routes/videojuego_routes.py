@@ -57,7 +57,7 @@ class VideojuegoUpdate(BaseModel):
     anio_lanzamiento: Optional[int] = None
     clasificacion: Optional[str] = None
     precio_compra: Optional[float] = None
-    precio_venta: Optional[int] = None
+    precio_venta: Optional[float] = None
     stock_actual: Optional[int] = None
     stock_minimo: Optional[int] = None
     stock_maximo: Optional[int] = None

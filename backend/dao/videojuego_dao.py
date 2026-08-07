@@ -98,7 +98,7 @@ class VideojuegoDAO:
                        stock_actual, stock_minimo, stock_maximo,
                        estado, id_categoria)
                     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    RUTERNING id_videojuego
+                    RETURNING id_videojuego
                 """, (
                     vj.get_titulo(),
                     vj.get_plataforma(),
@@ -133,9 +133,9 @@ class VideojuegoDAO:
             return None
         
         #Mezcla los datos existentes con los nuevos
-        marged = {**existente, **datos}   # Uno los datos antiguos con los nuevos
+        merged = {**existente, **datos}   # Uno los datos antiguos con los nuevos
         #valida con el modelo 
-        vj = Videojuego.from_row(marged) # Creo el objeto para validar la información
+        vj = Videojuego.from_row(merged) # Creo el objeto para validar la información
         if "titulo"           in datos: vj.set_titulo(datos["titulo"])
         if "plataforma"       in datos: vj.set_plataforma(datos["plataforma"])
         if "desarrollador"    in datos: vj.set_desarrollador(datos["desarrollador"])
@@ -202,7 +202,7 @@ class VideojuegoDAO:
         if existente is None:
             return None
         
-        nuevo_stock = existente["stok_actual"] + cantidad # Calculo el nuevo stock
+        nuevo_stock = existente["stock_actual"] + cantidad # Calculo el nuevo stock
         if nuevo_stock < 0:
             raise ValueError(
                 f"Stock insuficiente, Stock actual: {existente['stock_actual']},  "
@@ -213,7 +213,7 @@ class VideojuegoDAO:
         if existente["estado"] =="AGOTADO" and nuevo_stock > 0:
             nuevo_estado = "ACTIVO"
             
-        conn = get_connection
+        conn = get_connection()
         try:
             with get_cursor(conn) as cur:
                 # Actualizo el stock en la base de datos
@@ -248,7 +248,7 @@ class VideojuegoDAO:
             conn.rollback()
             raise RuntimeError(f"Error al eliminar videojuego {e}")
         finally:
-            release_connection
+            release_connection(conn)
             
     # ── obtiene todas las categorias registradas ───────────────────────────────────────────────────
     @staticmethod
