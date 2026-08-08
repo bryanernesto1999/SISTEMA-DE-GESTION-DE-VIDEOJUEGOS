@@ -80,13 +80,19 @@ class VideojuegoDAO:
             estado           = datos.get("estado", "ACTIVO"),
             id_categoria     = int(datos["id_categoria"]),
         )
-    #aqui se aplican los setters para ejecutar todas las validaciones 
+ #aqui se aplican los setters para ejecutar todas las validaciones (los 12 campos, igual que actualizar())
         vj.set_titulo(datos["titulo"])
         vj.set_plataforma(datos["plataforma"])
+        vj.set_desarrollador(datos.get("desarrollador", ""))
+        vj.set_anio_lanzamiento(int(datos.get("anio_lanzamiento", 2000)))
+        vj.set_clasificacion(datos.get("clasificacion", "TODOS"))
         vj.set_precio_compra(float(datos["precio_compra"]))
         vj.set_precio_venta(float(datos["precio_venta"]))
-        vj.set_clasificacion(datos.get("clasificacion", "TODOS"))
+        vj.set_stock_actual(int(datos.get("stock_actual", 0)))
+        vj.set_stock_minimo(int(datos.get("stock_minimo", 3)))
+        vj.set_stock_maximo(int(datos.get("stock_maximo", 100)))
         vj.set_estado(datos.get("estado", "ACTIVO"))
+        vj.set_id_categoria(int(datos["id_categoria"]))
     
         conn = get_connection()  # Me conecto a la base de datos
         try:
@@ -250,20 +256,6 @@ class VideojuegoDAO:
         finally:
             release_connection(conn)
             
-    # ── obtiene todas las categorias registradas ───────────────────────────────────────────────────
-    @staticmethod
-    def obtener_categorias() -> List[Dict]:
-        conn = get_connection()
-        try:
-            with get_cursor(conn) as cur:
-                # Consulto las categorías ordenadas por nombre
-                cur.execute("SELECT id_categoria, nombre FROM categoria ORDER BY nombre")
-                return [dict(r) for r in cur.fetchall()] # Devuelvo la lista de categorías
-        except Exception as e:
-            raise RuntimeError(f"Error al obtener categorias: {e}")
-        finally:
-            release_connection(conn)
-            
     # Obtiene las alertas de stock pendientes
     @staticmethod
     def obtener_alertas() -> List[Dict]:
@@ -281,7 +273,4 @@ class VideojuegoDAO:
         except Exception as e:
             raise RuntimeError(f"Error al obtener alertas: {e}")
         finally:
-            release_connection(conn)                  
-               
-         
-                   
+            release_connection(conn)

@@ -15,7 +15,7 @@ class CategoriaDAO:
         conn = get_connection()
         try:
             with get_cursor(conn) as cur:
-                cur.execute("SELECT id_categoria, nombre,descipcion FROM categoria ORDER BY nombre")
+                cur.execute("SELECT id_categoria, nombre,descripcion FROM categoria ORDER BY nombre")
                 
                 rows = cur.fetchall()
                 return [Categoria.from_row(dict(r)).to_dict() for r in rows]
@@ -76,8 +76,8 @@ class CategoriaDAO:
         if existente is None:
            return None
        
-        marged = {**existente, **datos}
-        cat = Categoria.from_row(marged)
+        merged = {**existente, **datos}
+        cat = Categoria.from_row(merged)
         if "nombre" in datos:
             cat.set_nombre(datos["nombre"])
         if "descripcion" in datos:
