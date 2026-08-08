@@ -33,7 +33,7 @@ class ProveedorDAO:
     @staticmethod
     def obtener_por_id(id_proveedor: int) -> Optional[Dict]:
         """Obtiene un proveedor por id"""
-        conn = get_connection
+        conn = get_connection()
         try:
             with get_cursor(conn) as cur:
                 cur.execute("""

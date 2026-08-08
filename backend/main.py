@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes.videojuego_routes import router as vj_router
 from routes.categoria_routes  import router as cat_router
+from routes.proveedor_routes  import router as prov_router
 
 app = FastAPI(
     title       = "SGIV — Sistema de Gestion de Inventario de Videojuegos",
@@ -17,7 +18,7 @@ app = FastAPI(
 # CORS — permite peticiones desde el frontend React (localhost:5173)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins  = ["http://localhost:5173", "http://localhost:3000"],
+    allow_origins  = ["http://localhost:5173","http://localhost:3000"],
     allow_methods  = ["*"],
     allow_headers  = ["*"],
 )
@@ -25,6 +26,7 @@ app.add_middleware(
 # Monta los routers
 app.include_router(vj_router)
 app.include_router(cat_router)
+app.include_router(prov_router)
 
 
 @app.get("/", tags=["Root"])
