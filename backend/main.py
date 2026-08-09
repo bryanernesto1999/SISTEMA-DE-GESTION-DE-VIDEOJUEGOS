@@ -8,10 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.videojuego_routes import router as vj_router
 from routes.categoria_routes  import router as cat_router
 from routes.proveedor_routes  import router as prov_router
+from routes.almacen_routes import router as alm_router
 
 app = FastAPI(
     title       = "SGIV — Sistema de Gestion de Inventario de Videojuegos",
-    description = "API CRUD con POO en Python + PostgreSQL. Curso POO 2025-I.",
+    description = "API CRUD con POO en Python + PostgreSQL. Curso POO 2026-III ciclo.",
     version     = "2.0.0",
 )
 
@@ -27,7 +28,7 @@ app.add_middleware(
 app.include_router(vj_router)
 app.include_router(cat_router)
 app.include_router(prov_router)
-
+app.include_router(alm_router)
 
 @app.get("/", tags=["Root"])
 def root():
