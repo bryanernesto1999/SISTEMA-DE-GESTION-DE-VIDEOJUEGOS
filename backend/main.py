@@ -11,6 +11,7 @@ from routes.proveedor_routes  import router as prov_router
 from routes.almacen_routes import router as alm_router
 from routes.usuario_routes import router as usr_router
 from routes.stock_almacen_routes import router as stock_router
+from routes.movimiento_inventario_routes import router as mov_router
 
 app = FastAPI(
     title       = "SGIV — Sistema de Gestion de Inventario de Videojuegos",
@@ -33,6 +34,7 @@ app.include_router(prov_router)
 app.include_router(alm_router)
 app.include_router(usr_router)
 app.include_router(stock_router)
+app.include_router(mov_router)
 
 @app.get("/", tags=["Root"])
 def root():
